@@ -13,7 +13,7 @@ a. soft link (symlink system call)
  //System call for soft link
 int main(){
 
-    const char *targetFile = "test.txt";
+    const char *targetFile = "test1a.txt";
     const char *softlink = "1a_softlink.txt";
 
     int fileDescriptor;

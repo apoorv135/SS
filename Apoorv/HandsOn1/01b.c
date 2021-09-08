@@ -13,7 +13,7 @@ b. Hard link (link system call)
  //System call for hard link
 int main(){
 
-    const char *targetFile = "test.txt";
+    const char *targetFile = "test1b.txt";
     const char *hardLink = "1b_hardlink.txt";
 
     int fileDescriptor;

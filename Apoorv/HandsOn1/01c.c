@@ -15,7 +15,7 @@ c. FIFO (mkfifo Library Function or mknod system call)
  //System call mkfifo and mknod
 int main(){
 
-    const char *targetFile = "test.txt";
+    const char *targetFile = "test1c.txt";
     const char *mkfifotest = "1c_mkfifotest.txt";
     const char *mknodtest = "1c_mknodtest.txt";
 

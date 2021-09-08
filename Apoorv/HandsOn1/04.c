@@ -1,6 +1,6 @@
 /* 
 MT2020013 Apoorv Panse
-Write a program to create a file and print the file descriptor value. Use creat ( ) system call
+Write a program to open an existing file with read write mode. Try O_EXCL flag also.
 */
 
 #include <unistd.h>
@@ -11,13 +11,14 @@ Write a program to create a file and print the file descriptor value. Use creat 
 #include <string.h>
 
 int main(){
-    const char * file = "test3.txt";
-    int fileDescriptor = creat(file, 0777);
+    const char *file = "test4.txt";
+    int fileDescriptor = open(file,O_RDWR | O_EXCL | O_CREAT);
     if(fileDescriptor == -1){
         printf("%s\n",strerror(errno));
     }
     else{
-        printf("File descriptor: %d \n", fileDescriptor);
+        printf("File opened in read write mode \n");
     }
+    close(fileDescriptor);
     return 0;
 }
