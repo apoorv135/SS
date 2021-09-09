@@ -11,7 +11,7 @@ Write a program to copy file1 into file2.
 #include <string.h>
 
 int main(){
-    const char *sourceFile = "test7_source.txt";
+    const char *sourceFile = "07.c";
     const char *destinationFile = "test7_destination.txt";
 
     int sourceFileFd = open(sourceFile, O_RDONLY, 0777);
