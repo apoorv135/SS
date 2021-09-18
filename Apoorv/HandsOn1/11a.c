@@ -1,4 +1,5 @@
 /* 
+MT2020013 Apoorv Panse
 Write a program to open a file, duplicate the file descriptor and append the file with both the
 descriptors and check whether the file is updated properly or not.
 a. use dup
