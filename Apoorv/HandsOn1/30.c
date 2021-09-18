@@ -19,7 +19,7 @@ int main()
         umask(0); 
         while(1) {
             sleep(SLEEP_TIME);
-            system("bash test30.sh");
+            system("bash 30.sh");
         }
     } else exit(0);
     return 0;
