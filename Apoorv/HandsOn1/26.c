@@ -14,8 +14,8 @@ b. pass some input to an executable program. (for example execute an executable 
 
 int main()
 {   //test file execution should print arguments 'Hello' and 'World' that is passed...
-    //Please compile test26.c first and name the executable to test26.out
-    int x = execl("./test26.out", "Hello","World", (char *) NULL);
+    //Please compile 26test.c first and name the executable to test26
+    int x = execl("./26test", "Hello","World", (char *) NULL);
     if ( x < 0 ){
         printf("%s\n",strerror(errno));
     }
