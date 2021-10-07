@@ -21,7 +21,7 @@ int main()
 	return 0;
 
 }
-/*OUTPUT : 
+/*
 Default values of number of FDs :8192
 Values of number of FDs after changing:4096
 */

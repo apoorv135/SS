@@ -38,7 +38,6 @@ int main()
 
 }
 /* 
-OUTPUT : 
 Start timer
 SIGVTALRM is caught 
 Stopped timer 
