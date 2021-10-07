@@ -15,7 +15,7 @@ g. number of currently available pages in the physical memory.
 
 void main()
 {
-	/*sysconf library func. gets the configuration information at run time*/
+	
 	printf("Maximum length of the arguments to the exec family of functions: %ld \n",sysconf(_SC_ARG_MAX));
 	printf("Maximum number of simultaneous process per user id: %ld \n",sysconf(_SC_CHILD_MAX));
 	printf("Number of clock ticks (jiffy) per second.: %ld \n",sysconf(_SC_CLK_TCK));
