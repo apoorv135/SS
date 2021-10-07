@@ -14,8 +14,8 @@ c. ITIMER_PROF
 
 void handler_function()
 {
-	printf("SIGPROF is caught \n");
-	printf("Stopped timer \n");
+	printf("SIGPROF signal is caught \n");
+	printf("Timer Stopped \n");
 	exit(0);
 
 }
@@ -39,6 +39,6 @@ int main()
 }
 /* 
 Start timer
-SIGPROF is caught 
-Stopped timer
+SIGPROF signal is caught
+Timer Stopped
 */
