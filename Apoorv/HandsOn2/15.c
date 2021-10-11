@@ -11,18 +11,17 @@ int main(){
     int fd[2];
     pipe(fd);
     if(!fork()){
-        
+        close(fd[1]);
         sleep(1);
         char buff[11];
         read(fd[0], buff, 11);
         printf("Data recieved from parent: %s", buff);
         close(fd[0]);
-        close(fd[1]);
+        
     }
     else{
-        
-        write(fd[1], "HelloWorld\n", 11);
         close(fd[0]);
+        write(fd[1], "HelloWorld\n", 11);
         close(fd[1]);
         sleep(2);
     }
