@@ -22,6 +22,7 @@ int main()
     fd = open(myfifo, O_WRONLY);
     if(fd < 0){
         printf("%s\n",strerror(errno));
+        exit(0);
     }
     while (1)
     {                

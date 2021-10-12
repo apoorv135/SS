@@ -4,15 +4,6 @@ MT2020013 Apoorv Panse
 */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-
-#include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
