@@ -15,7 +15,7 @@ int main()
 {
   int messageId;
   key_t key;
-  key=ftok("./24.c",100);
+  key=ftok("./24.c",24);
  
   messageId=msgget(key,IPC_CREAT|IPC_EXCL|0777);   
   if(messageId < 0)
