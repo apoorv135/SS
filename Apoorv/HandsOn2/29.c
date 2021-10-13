@@ -1,4 +1,3 @@
-
 /* 
 MT2020013 Apoorv Panse
 29. Write a program to remove the message queue.
