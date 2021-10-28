@@ -9,45 +9,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "Structures.c"
-
+#include "setup.c"
 
 #define PORT 55555
 
 void client_workplace(int desc, int try_count, struct AccountDetails user);
 void admin_workplace(int desc, int try_count);
-
-void initial_setup(){
-    if(open("login.dat", O_RDONLY) == -1){
-        printf("Setting up Account database\n");
-        creat("login.dat", 0644);
-        int fd = open("login.dat", O_RDWR);
-        struct AccountDetails admin;
-        strcpy(admin.username, "admin");
-        strcpy(admin.password, "12345");
-        admin.accountType = 3;
-        admin.sessionFlag = 0;
-        strcpy(admin.accountStatus, "ACTIVE");
-        write(fd, &admin, sizeof(admin));
-        close(fd);
-    }
-    if(open("train.dat", O_RDONLY) == -1){
-        printf("Setting up Trains database\n");
-        creat("train.dat", 0644);
-    }
-    if(open("booking.dat", O_RDONLY) == -1){
-        printf("Setting up Booking database\n");
-        creat("booking.dat", 0644);
-    }
-    if(open("bid.dat", O_RDONLY) == -1){
-        printf("Setting up Booking Number database\n");
-        creat("bid.dat", 0644);
-        int fd = open("bid.dat", O_RDWR);
-        int bid = 1;
-        write(fd, &bid, sizeof(bid));
-        close(fd);
-    }
-}
+void initial_setup();
 
 void send_message(int desc, char *msg, char *input){
     for (size_t i = 0; i < 10000; i++);    
