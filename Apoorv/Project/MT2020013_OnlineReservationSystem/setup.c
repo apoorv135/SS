@@ -6,10 +6,10 @@
 #include "Structures.c"
 
 void initial_setup(){
-    if(open("login.dat", O_RDONLY) == -1){
+    if(open("loginInfo.dat", O_RDONLY) == -1){
         
-        creat("login.dat", 0644);
-        int fd = open("login.dat", O_RDWR);
+        creat("loginInfo.dat", 0644);
+        int fd = open("loginInfo.dat", O_RDWR);
         struct AccountDetails admin;
         strcpy(admin.username, "admin");
         strcpy(admin.password, "admin");
@@ -19,18 +19,18 @@ void initial_setup(){
         write(fd, &admin, sizeof(admin));
         close(fd);
     }
-    if(open("train.dat", O_RDONLY) == -1){
+    if(open("trainInfo.dat", O_RDONLY) == -1){
         
-        creat("train.dat", 0644);
+        creat("trainInfo.dat", 0644);
     }
-    if(open("booking.dat", O_RDONLY) == -1){
+    if(open("bookingInfo.dat", O_RDONLY) == -1){
         
-        creat("booking.dat", 0644);
+        creat("bookingInfo.dat", 0644);
     }
-    if(open("bid.dat", O_RDONLY) == -1){
+    if(open("bidInfo.dat", O_RDONLY) == -1){
         
-        creat("bid.dat", 0644);
-        int fd = open("bid.dat", O_RDWR);
+        creat("bidInfo.dat", 0644);
+        int fd = open("bidInfo.dat", O_RDWR);
         int bid = 1;
         write(fd, &bid, sizeof(bid));
         close(fd);
