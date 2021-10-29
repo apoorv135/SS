@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
         }
         else if(strcmp("CLOSE", output) == 0){
             shutdown(socketDescriptor, SHUT_WR);
-            printf("Connection Closed, Good Bye\n");
+            printf("Closing Connection\n");
             break;
         }
         memset(message, 0, sizeof(message));

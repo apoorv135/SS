@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "setup.c"
+#include "utilityFunctions.c"
 
 #define PORT 55555
 
@@ -17,49 +18,6 @@ void client_workplace(int desc, int try_count, struct AccountDetails user);
 void admin_workplace(int desc, int try_count);
 void initial_setup();
 
-void send_message(int desc, char *msg, char *input){
-    for (size_t i = 0; i < 10000; i++);    
-    write(desc, msg, 1024);
-    read(desc, input, 1024);
-}
-
-struct flock file_read_lock(struct flock lock, int fd){
-    lock.l_type = F_RDLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-	printf("Before Entering the RL critical section\n");
-	fcntl(fd, F_SETLKW, &lock);
-    printf("Inside Critical Section\n");
-    return lock;
-}
-
-struct flock file_read_unlock(struct flock lock, int fd){
-    lock.l_type = F_UNLCK;
-	printf("Unlocked\n");
-	fcntl(fd, F_SETLK, &lock);
-    return lock;
-}
-
-struct flock file_write_lock(struct flock lock, int fd){
-	lock.l_type = F_WRLCK;
-	lock.l_whence = SEEK_SET;
-	lock.l_start = 0;
-	lock.l_len = 0;
-	lock.l_pid = getpid();
-	printf("Before Entering the WL critical section\n");
-	fcntl(fd, F_SETLKW, &lock);
-    printf("Inside Critical Section\n");
-    return lock;
-}
-
-struct flock file_write_unlock(struct flock lock, int fd){
-    lock.l_type = F_UNLCK;
-	printf("Unlocked\n");
-	fcntl(fd, F_SETLK, &lock);
-    return lock;
-}
 
 void session_logout(int desc, struct AccountDetails user){
     struct AccountDetails temp;
@@ -67,7 +25,7 @@ void session_logout(int desc, struct AccountDetails user){
     char input[1024];
     struct flock lock;
     int fd = open("loginInfo.dat", O_RDWR);
-    lock = file_write_lock(lock, fd);
+    file_write_lock(lock, fd);
     while(read(fd, &temp, sizeof(temp)) > 0){
         if(strcmp(temp.username, user.username)==0){
             user.sessionFlag = 0;
@@ -77,7 +35,7 @@ void session_logout(int desc, struct AccountDetails user){
         }
         ++index;
     }
-    lock = file_write_unlock(lock, fd);
+    file_write_unlock(lock, fd);
     close(fd);
     send_message(desc, "CLOSE", input);
 }
@@ -86,13 +44,13 @@ int operation_bid(){
     int bid, temp;
     struct flock lock;
     int fd = open("bidInfo.dat", O_RDWR);
-    lock = file_write_lock(lock, fd);
+    file_write_lock(lock, fd);
 	read(fd, &bid, sizeof(bid));
     temp = bid;
 	++bid;
 	lseek(fd, 0L, SEEK_SET);
 	write(fd, &bid, sizeof(bid));
-    lock = file_write_unlock(lock, fd);
+    file_write_unlock(lock, fd);
     close(fd);
     return temp;
 }
@@ -102,7 +60,7 @@ int print_trains(int desc){
     struct flock lock;
     char buff[1024];
     int fd = open("trainInfo.dat", O_RDONLY);
-    lock = file_read_lock(lock, fd);
+    readLock(lock, fd);
     int flag = 0;
     char message[1024] = "\nTrain Details are:";
     send_message(desc, "R", buff);
@@ -124,7 +82,7 @@ int print_trains(int desc){
             flag = 1;
         }
     }
-    lock = file_read_unlock(lock, fd);
+    file_read_unlock(lock, fd);
     close(fd);
     if(!flag){
         strcpy(message, "**No Train found. Please check with admin.\n");
@@ -140,7 +98,7 @@ int check_seats_train(struct BookingDetails book){
     struct flock lock;
     int index = 0, seats_rem;
     int fd = open("trainInfo.dat", O_RDWR);
-    lock = file_write_lock(lock, fd);
+    file_write_lock(lock, fd);
     while(read(fd, &train, sizeof(train))>0){
         if(strcmp(train.trainStatus, "ACTIVE")==0 && strcmp(train.number, book.trainNo)==0){
             seats_rem = train.totalSeats - train.bookedSeats;
@@ -148,19 +106,19 @@ int check_seats_train(struct BookingDetails book){
                 train.bookedSeats += book.NumOfSeats;
                 lseek(fd, index*sizeof(train), SEEK_SET);
                 write(fd, &train, sizeof(train));
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 return 1;
             }
             else{
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 return 0;
             }
         }
         ++index;
     }
-    lock = file_write_unlock(lock, fd);
+    file_write_unlock(lock, fd);
     close(fd);
     return 2;
 }
@@ -170,19 +128,19 @@ int update_seats_train(struct BookingDetails book){
     struct flock lock;
     int index = 0;
     int fd = open("trainInfo.dat", O_RDWR);
-    lock = file_write_lock(lock, fd);
+    file_write_lock(lock, fd);
     while(read(fd, &train, sizeof(train))>0){
         if(strcmp(train.trainStatus, "ACTIVE")==0 && strcmp(train.number, book.trainNo)==0){
             train.bookedSeats = train.bookedSeats + book.NumOfSeats;
             lseek(fd, index*sizeof(train), SEEK_SET);
             write(fd, &train, sizeof(train));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             return 1;
         }
         ++index;
     }
-    lock = file_write_unlock(lock, fd);
+    file_write_unlock(lock, fd);
     close(fd);
     printf("Train Not found in update seats train\n");
     return 0;
@@ -236,10 +194,10 @@ void ticket_booking(int desc, int try_count, struct AccountDetails user){
                 return;
             case 1:
                 fd = open("bookingInfo.dat", O_RDWR);
-                lock = file_write_lock(lock, fd);
+                file_write_lock(lock, fd);
                 while(read(fd, &temp, sizeof(temp))>0);
                 write(fd, &book, sizeof(book));
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 strcpy(message, "\n*Booking with Booking ID - ");
                 snprintf(buff, sizeof(buff), "%d", book.bookingNumber);
@@ -274,7 +232,7 @@ int print_bookings(int desc, struct AccountDetails user){
     struct BookingDetails book;
     struct flock lock;
     int fd = open("bookingInfo.dat", O_RDONLY); 
-    lock = file_read_lock(lock, fd);
+    readLock(lock, fd);
     int flag = 0;
     char input[1024];
     char msg[1024] = "\nView Previous Bookings - User ";
@@ -300,7 +258,7 @@ int print_bookings(int desc, struct AccountDetails user){
             flag = 1;
         }
     }
-    lock = file_read_unlock(lock, fd);
+    file_read_unlock(lock, fd);
     close(fd);
     if(!flag){
         strcpy(msg, "**No Booking found. Please book first.\n");
@@ -349,7 +307,7 @@ void update_ticket_booking(int desc, int try_count, struct AccountDetails user){
         }
         else{
             int fd = open("bookingInfo.dat", O_RDONLY);
-            lock = file_read_lock(lock, fd);
+            readLock(lock, fd);
             while(read(fd, &temp, sizeof(temp))>0){
                 if(strcmp(temp.bookingStatus, "CONFIRMED")==0 && temp.bookingNumber == book.bookingNumber){
                     flag = 1;
@@ -358,7 +316,7 @@ void update_ticket_booking(int desc, int try_count, struct AccountDetails user){
                 }
                 ++index;
             }
-            lock = file_read_unlock(lock, fd);
+            file_read_unlock(lock, fd);
             close(fd);        
             if(!flag){
                 strcpy(message, "\n**Invalid Booking Number entered or Booking is Cancelled, Please Enter valid Booking Number");
@@ -381,11 +339,11 @@ void update_ticket_booking(int desc, int try_count, struct AccountDetails user){
                         return;
                     case 1:
                         fd = open("bookingInfo.dat", O_RDWR);
-                        lock = file_write_lock(lock, fd);
+                        file_write_lock(lock, fd);
                         temp.NumOfSeats = book.NumOfSeats;
                         lseek(fd, index*sizeof(temp), SEEK_SET);
                         write(fd, &temp, sizeof(temp));
-                        lock = file_write_unlock(lock, fd);
+                        file_write_unlock(lock, fd);
                         close(fd);
                         strcpy(message, "\n*Booking with Booking ID - ");
                         snprintf(buff, sizeof(buff), "%d", temp.bookingNumber);
@@ -439,7 +397,7 @@ void delete_ticket_booking(int desc, int try_count, struct AccountDetails user){
         send_message(desc, message, buff);
         sscanf(buff, "%d", &book.bookingNumber);
         int fd = open("bookingInfo.dat", O_RDONLY);
-        lock = file_read_lock(lock, fd);
+        readLock(lock, fd);
         while(read(fd, &temp, sizeof(temp))>0){
             if(strcmp(temp.bookingStatus, "CONFIRMED")==0 && temp.bookingNumber == book.bookingNumber){
                 temp.NumOfSeats = -temp.NumOfSeats;
@@ -452,7 +410,7 @@ void delete_ticket_booking(int desc, int try_count, struct AccountDetails user){
             }
             ++index;
         }
-        lock = file_read_unlock(lock, fd);
+        file_read_unlock(lock, fd);
         close(fd);
         if(!flag){
             strcpy(message, "\n**Invalid Booking Number entered or Booking is already Cancelled, Please Enter valid Booking Number");
@@ -462,10 +420,10 @@ void delete_ticket_booking(int desc, int try_count, struct AccountDetails user){
         }
         else{
             int fd = open("bookingInfo.dat", O_RDWR);
-            lock = file_write_lock(lock, fd);
+            file_write_lock(lock, fd);
             lseek(fd, index*sizeof(temp), SEEK_SET);
             write(fd, &temp, sizeof(temp));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             strcpy(message, "\n*Booking with Booking ID - ");
             snprintf(buff, sizeof(buff), "%d", temp.bookingNumber);
@@ -600,10 +558,10 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
         send_message(desc, "R", buff);
         send_message(desc, msg, buff);
         int fd = open("trainInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         lseek(fd, index*sizeof(temp), SEEK_SET);
         write(fd, &temp, sizeof(temp));
-        lock = file_write_unlock(lock, fd);
+        file_write_unlock(lock, fd);
         close(fd);
         send_message(desc, "R", buff);
         send_message(desc, message, buff);
@@ -652,7 +610,7 @@ void admin_train_op(int desc, int try_count){
         train.bookedSeats = 0;
         strcpy(train.trainStatus, "ACTIVE");
         int fd = open("trainInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(train.number, temp.number)==0 && strcmp(temp.trainStatus, "ACTIVE")==0){
                 char msg[1024] = "**Train Number ";
@@ -666,7 +624,7 @@ void admin_train_op(int desc, int try_count){
             else if(strcmp(train.number, temp.number)==0 && strcmp(temp.trainStatus, "INACTIVE")==0){                        
                 lseek(fd, index*sizeof(temp), SEEK_SET);
                 write(fd, &train, sizeof(train));
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 char msg[1024] = "*Train Number ";
                 strcat(msg, train.number);
@@ -681,13 +639,13 @@ void admin_train_op(int desc, int try_count){
             ++index;
         } 
         if(flag){
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             admin_train_op(desc, --try_count);
         }
         else{
             write(fd, &train, sizeof(train));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char msg[1024] = "*Train Number ";
             strcat(msg, train.number);
@@ -708,7 +666,7 @@ void admin_train_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(train.number, buff);
         int fd = open("trainInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(train.number, temp.number)==0 && strcmp(temp.trainStatus, "ACTIVE")==0 && temp.bookedSeats==0){
                 strcpy(temp.trainStatus, "INACTIVE");
@@ -720,7 +678,7 @@ void admin_train_op(int desc, int try_count){
         if(flag){
             lseek(fd, index*sizeof(temp), SEEK_SET);
             write(fd, &temp, sizeof(temp));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char msg[1024] = "*Train Number ";
             strcat(msg, temp.number);
@@ -731,7 +689,7 @@ void admin_train_op(int desc, int try_count){
             send_message(desc, msg, buff);
             admin_workplace(desc, 2);
         }else{
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char msg[1024] = "**Train Number ";
             strcat(msg, train.number);
@@ -750,7 +708,7 @@ void admin_train_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(train.number, buff);
         int fd = open("trainInfo.dat", O_RDONLY);
-        lock = file_read_lock(lock, fd);
+        readLock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(train.number, temp.number)==0 && strcmp(temp.trainStatus, "ACTIVE")==0){
                 flag = 1;
@@ -758,7 +716,7 @@ void admin_train_op(int desc, int try_count){
             }
             ++index;
         }
-        lock = file_read_unlock(lock, fd);
+        file_read_unlock(lock, fd);
         close(fd);
             
         if(flag){
@@ -782,14 +740,14 @@ void admin_train_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(train.number, buff);
         int fd = open("trainInfo.dat", O_RDONLY);
-        lock = file_read_lock(lock, fd);
+        readLock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(train.number, temp.number)==0){
                 flag = 1;
                 break;
             }
         }
-        lock = file_read_unlock(lock, fd);
+        file_read_unlock(lock, fd);
         close(fd);
         
         if(flag){
@@ -909,10 +867,10 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
         send_message(desc, "R", buff);
         send_message(desc, msg, buff);            
         int fd = open("loginInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         lseek(fd, index*sizeof(temp), SEEK_SET);
         write(fd, &temp, sizeof(temp));
-        lock = file_write_unlock(lock, fd);
+        file_write_unlock(lock, fd);
         close(fd);
         send_message(desc, "R", buff);
         send_message(desc, message, buff);
@@ -965,7 +923,7 @@ void admin_user_op(int desc, int try_count){
         else{
             strcpy(user.accountStatus, "ACTIVE");
             int fd = open("loginInfo.dat", O_RDWR);
-            lock = file_write_lock(lock, fd);
+            file_write_lock(lock, fd);
             while(read(fd, &temp, sizeof(temp)) > 0){
                 if(strcmp(user.username, temp.username)==0 && strcmp(temp.accountStatus, "ACTIVE")==0){
                     char msg[1024] = "**Account ";
@@ -979,7 +937,7 @@ void admin_user_op(int desc, int try_count){
                 else if(strcmp(user.username, temp.username)==0 && strcmp(temp.accountStatus, "INACTIVE")==0){
                     lseek(fd, index*sizeof(temp), SEEK_SET);
                     write(fd, &user, sizeof(user));
-                    lock = file_write_unlock(lock, fd);
+                    file_write_unlock(lock, fd);
                     close(fd);
                     char msg[1024] = "*Account ";
                     strcat(msg, user.username);
@@ -1008,13 +966,13 @@ void admin_user_op(int desc, int try_count){
                 ++index;
             }
             if(flag){
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 admin_user_op(desc, --try_count);
             }
             else{
                 write(fd, &user, sizeof(user));
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 char msg[1024] = "*Account ";
                 strcat(msg, user.username);
@@ -1050,10 +1008,10 @@ void admin_user_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(user.username, buff);
         int fd = open("loginInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         int fd2 = open("bookingInfo.dat", O_RDONLY);
         struct flock lock2;
-        lock2 = file_read_lock(lock2, fd2);
+        lock2 = readLock(lock2, fd2);
         struct BookingDetails book;
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(user.username, temp.username)==0 && strcmp(temp.accountStatus, "ACTIVE")==0){
@@ -1074,7 +1032,7 @@ void admin_user_op(int desc, int try_count){
         if(flag){
             lseek(fd, index*sizeof(temp), SEEK_SET);
             write(fd, &temp, sizeof(temp));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char msg[1024] = "*Account ";
             strcat(msg, temp.username);
@@ -1097,7 +1055,7 @@ void admin_user_op(int desc, int try_count){
             send_message(desc, msg, buff);
             admin_workplace(desc, 2);
         }else{
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char msg[1024] = "**Account (";
             strcat(msg, user.username);
@@ -1116,7 +1074,7 @@ void admin_user_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(user.username, buff);
         int fd = open("loginInfo.dat", O_RDONLY);
-        lock = file_read_lock(lock, fd);
+        readLock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(user.username, temp.username)==0 && strcmp(temp.accountStatus, "ACTIVE")==0){
                 flag = 1;
@@ -1124,7 +1082,7 @@ void admin_user_op(int desc, int try_count){
             }
             ++index;
         }
-        lock = file_read_unlock(lock, fd);
+        file_read_unlock(lock, fd);
         close(fd);
             
         if(flag){
@@ -1148,14 +1106,14 @@ void admin_user_op(int desc, int try_count){
         send_message(desc, message, buff);
         strcpy(user.username, buff);
         int fd = open("loginInfo.dat", O_RDWR);
-        lock = file_write_lock(lock, fd);
+        file_write_lock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(user.username, temp.username)==0){
                 flag = 1;
                 break;
             }
         }
-        lock = file_write_unlock(lock, fd);
+        file_write_unlock(lock, fd);
         close(fd);
         char msg[1024] = "\nUsername ";
         if(flag){
@@ -1234,7 +1192,7 @@ void verify_credentials(int desc, char *username, char *password){
     struct AccountDetails account;
     struct flock lock;
     int fd = open("loginInfo.dat", O_RDWR);
-    lock = file_write_lock(lock, fd);
+    file_write_lock(lock, fd);
     char input[1024];
     int index = 0;
     if(fd == -1){
@@ -1251,7 +1209,7 @@ void verify_credentials(int desc, char *username, char *password){
                 strcat(welcome_msg, "\n**You are already logged in. You can't login again.\n");
                 send_message(desc, "R", input);
                 send_message(desc, welcome_msg, input);
-                lock = file_write_unlock(lock, fd);
+                file_write_unlock(lock, fd);
                 close(fd);
                 send_message(desc, "CLOSE", input);
                 return;
@@ -1259,7 +1217,7 @@ void verify_credentials(int desc, char *username, char *password){
             account.sessionFlag = 1;
             lseek(fd, index*sizeof(account), SEEK_SET);
             write(fd, &account, sizeof(account));
-            lock = file_write_unlock(lock, fd);
+            file_write_unlock(lock, fd);
             close(fd);
             char welcome_msg[1024] = "\nWelcome ";
             strcat(welcome_msg, account.username);
