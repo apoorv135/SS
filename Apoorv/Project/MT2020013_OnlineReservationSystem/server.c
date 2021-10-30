@@ -23,7 +23,7 @@ int main(int argc, char const *argv[]){
 	    perror("Error on binding:");
 	    exit(EXIT_FAILURE);
 	}
-    printf("Listening Incoming request on port %d... \n", PORT);
+    
     listen(socketDescriptor, 5);
     
     while(1){
@@ -37,8 +37,7 @@ int main(int argc, char const *argv[]){
             
             clientConn(client_desc);
             close(client_desc);
-            printf("Client has disconnected...\n");
-            printf("Listening Incoming request on port %d... \n", PORT);
+            
             exit(EXIT_SUCCESS);
         }else{
             close(client_desc);
