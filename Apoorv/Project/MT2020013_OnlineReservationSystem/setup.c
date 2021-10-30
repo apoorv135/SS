@@ -1,5 +1,3 @@
-#include <declarationHeader.h>
-
 void initial_setup(){
     if(open("loginInfo.dat", O_RDONLY) == -1){
         

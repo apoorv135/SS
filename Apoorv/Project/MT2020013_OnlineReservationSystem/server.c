@@ -1,6 +1,9 @@
-#include "declarationHeader.h"
+
+#include "Structures.c"
+#include "utilityFunctions.c"
 
 #define PORT 55555
+
 
 int main(int argc, char const *argv[]){
     struct sockaddr_in server, client;
