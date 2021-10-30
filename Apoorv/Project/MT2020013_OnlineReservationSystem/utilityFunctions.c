@@ -27,28 +27,36 @@ struct flock writeUnlock(struct flock lock, int fd);
 //For communicating with the client.
 void sendMessage(int desc, char *msg, char *input);
 
-//
+//OperationCounter
 int operationCounter();
 
+//Train Utility Functions.
 int printTrainInfo(int desc);
 int checkTrainSeats(struct BookingDetails book);
 int updateTrainSeats(struct BookingDetails book);
+
+//Booking Utility Functions.
 int printBookingDetails(int desc, struct AccountDetails user);
 void updateBooking(int desc, int try_count, struct AccountDetails user);
 void deleteBooking(int desc, int try_count, struct AccountDetails user);
+
 void bookTickets(int desc, int try_count, struct AccountDetails user);
 
-void logout(int desc, struct AccountDetails user);
+//client operation functions
 void clientConn(int desc);
 int getCreds(int desc);
 void verifyCreds(int desc, char *username, char *password);
 void clientOperations(int desc, int try_count, struct AccountDetails user);
+void logout(int desc, struct AccountDetails user);
 
+//Admin operation functions
 void adminTrainOperations(int desc, int try_count);
 void adminModifyUser(int desc, int try_count, struct AccountDetails temp, int index);
 void adminUserOperations(int desc, int try_count);
 void adminOperations(int desc, int try_count);
 void clientOperations(int desc, int try_count, struct AccountDetails user);
+
+//Definitions of above declared functions.
 
 struct flock readLock(struct flock lock, int fd){
     lock.l_type = F_RDLCK;
