@@ -455,7 +455,7 @@ void bookTickets(int desc, int try_count, struct AccountDetails user){
         sscanf(buff, "%d", &book.NumOfSeats);
         book.bookingNumber = operationCounter();
         strcpy(book.accountNo, user.username);
-        strcpy(book.bookingStatus, "TICKETS CONFIRMED");
+        strcpy(book.bookingStatus, "CONFIRMED");
         if(book.NumOfSeats<=0){
             strcpy(message, "\nInvalid number of seats entered, Kindly try again.");
             sendMessage(desc, "R", buff);
