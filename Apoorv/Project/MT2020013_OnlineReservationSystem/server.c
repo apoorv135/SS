@@ -12,8 +12,7 @@ int main(int argc, char const *argv[]){
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    // server.sin_addr.s_addr = inet_addr("127.0.0.1");
-
+    
     server.sin_port = htons(PORT);
     if(bind(socket_desc, (void *)(&server), sizeof(server)) < 0) {
 	    perror("Error on binding:");

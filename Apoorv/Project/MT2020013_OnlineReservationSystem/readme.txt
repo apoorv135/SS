@@ -1,22 +1,29 @@
 How to Run:
- For Server
- 1. $ gcc server.c -o server
- 2. ./server
- For Client
- 1. $ gcc client.c -o client
- 2. ./client
- 3. Enter username: admin
- 4  Enter password: 12345
-Once you login as admin you can add any number of user/agent/admin accounts and login using them.
 
-Features of the Project
- 1. On server initiation it will create 4 files - login.dat, booking.dat, bid.dat, train.dat
- 2. When login as admin, you can do CRUD operations on user i.e. login.dat file and on Train i.e. train.dat
- 3. You can not delete a user or train when there's a booking associated to user or train.
- 4. An account as user with same username cannot login again if the session is on from different terminal.
- 5. An account as agent with same username can login again from different terminal.
- 6. Any client logged-in cannot quit until and unless it has properly logged out.
- 7. As user and agent you can do booking of the ticket, modify a ticket, cancel a ticket and view previous bookings.
- 8. When you cancel the ticket the number of booked seats are reduced from the booked seats of the given train.
- 9. When you modify the ticket i.e. the number of booked seats are reduced or increased from the booking, the booked seats of the given train are respectively reflected.
-10. READ and WRITE Locks are applied throughout server side to ensure smooth booking and other operations.
+1. Enter following command : 
+$ ./compile.sh 
+This will compile all the files for you. 
+
+2. To run the server : 
+$ ./server 
+This will run the server and it will keep running until its killed manually by linux admin. 
+
+3. To run the client : 
+#./ client 
+This is a dummy client and it is just used to send and retrieve the messages back and forth with server. 
+All the operations are done on server. 
+
+*****Additional Details******
+ADMIN Credentials for login first time : 
+Username : admin
+Password : admin 
+
+There are two primary operations to be done by admin for first time the program is run. 
+Which is adding a train and adding a user or agent so that tickets can be booked. 
+
+In case there is some port issue, modify the port number defined on top of client.c and server.c to some other port
+and recompile. 
+
+In case you want to reset the program and recompile, you can simply run below command : 
+$./reset.sh 
+This will delete existing files if any and will leave the folder with default code files. 
