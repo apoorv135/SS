@@ -1,3 +1,7 @@
+/* MT2020013 APOORV PANSE
+This is utility function code, all major coding is done here. List of functions are declared below.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -11,15 +15,20 @@
 #include <fcntl.h>
 #include "setup.c"
 
+//Setting up databases for saving Login Informations, Train details, Booking Informations, Ticket Bidding Information. 
 void initial_setup();
 
+//File Locking Mechanisms.
 struct flock readLock(struct flock lock, int fd);
 struct flock readUnlock(struct flock lock, int fd);
 struct flock writeLock(struct flock lock, int fd);
 struct flock writeUnlock(struct flock lock, int fd);
 
+//For communicating with the client.
 void sendMessage(int desc, char *msg, char *input);
-int bidOperation();
+
+//
+int operationCounter();
 
 int printTrainInfo(int desc);
 int checkTrainSeats(struct BookingDetails book);
@@ -35,8 +44,8 @@ int getCreds(int desc);
 void verifyCreds(int desc, char *username, char *password);
 void clientOperations(int desc, int try_count, struct AccountDetails user);
 
-void admin_train_op(int desc, int try_count);
-void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int index);
+void adminTrainOperations(int desc, int try_count);
+void adminModifyUser(int desc, int try_count, struct AccountDetails temp, int index);
 void adminUserOperations(int desc, int try_count);
 void adminOperations(int desc, int try_count);
 void clientOperations(int desc, int try_count, struct AccountDetails user);
@@ -85,7 +94,7 @@ void sendMessage(int desc, char *msg, char *input){
     read(desc, input, 1024);
 }
 
-int bidOperation(){
+int operationCounter(){
     int bid, temp;
     struct flock lock;
     int fd = open("bidInfo.dat", O_RDWR);
@@ -100,7 +109,7 @@ int bidOperation(){
     return temp;
 }
 
-
+//print train information
 int printTrainInfo(int desc){
     struct TrainDetails train;
     struct flock lock;
@@ -139,6 +148,7 @@ int printTrainInfo(int desc){
     return 1;
 }
 
+//checking how many seats are taken and how many are vacant.
 int checkTrainSeats(struct BookingDetails book){
     struct TrainDetails train;
     struct flock lock;
@@ -169,6 +179,7 @@ int checkTrainSeats(struct BookingDetails book){
     return 2;
 }
 
+//updating the booked seats
 int updateTrainSeats(struct BookingDetails book){
     struct TrainDetails train;
     struct flock lock;
@@ -192,7 +203,7 @@ int updateTrainSeats(struct BookingDetails book){
     return 0;
 }
 
-
+//printing the booking details.
 int printBookingDetails(int desc, struct AccountDetails user){
     struct BookingDetails book;
     struct flock lock;
@@ -238,6 +249,7 @@ int printBookingDetails(int desc, struct AccountDetails user){
 
 }
 
+//updating the booking.
 void updateBooking(int desc, int try_count, struct AccountDetails user){
     char buff[1024];
     struct flock lock;
@@ -341,6 +353,7 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
     }
 }
 
+//deleting a booking
 void deleteBooking(int desc, int try_count, struct AccountDetails user){
     char buff[1024];
     struct flock lock;
@@ -407,6 +420,7 @@ void deleteBooking(int desc, int try_count, struct AccountDetails user){
     }
 }
 
+//booking the tickets.
 void bookTickets(int desc, int try_count, struct AccountDetails user){
     char buff[1024];
     struct flock lock;
@@ -431,7 +445,7 @@ void bookTickets(int desc, int try_count, struct AccountDetails user){
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &book.NumOfSeats);
-        book.bookingNumber = bidOperation();
+        book.bookingNumber = operationCounter();
         strcpy(book.accountNo, user.username);
         strcpy(book.bookingStatus, "TICKETS CONFIRMED");
         if(book.NumOfSeats<=0){
@@ -489,12 +503,14 @@ void bookTickets(int desc, int try_count, struct AccountDetails user){
     }
 }
 
+//Client Connection Setup
 void clientConn(int desc){
     char input[1024];
     read(desc, input, sizeof(input));
     getCreds(desc);
 }
 
+//Get the credentials
 int getCreds(int desc){
     char username_msg[1024] = "Enter Username: ";
     char password_msg[1024] = "Enter Password: ";
@@ -515,6 +531,7 @@ int getCreds(int desc){
     return 0;  
 }
 
+//Verify the credentials stored on Server
 void verifyCreds(int desc, char *username, char *password){
     struct AccountDetails account;
     struct flock lock;
@@ -574,6 +591,7 @@ void verifyCreds(int desc, char *username, char *password){
     sendMessage(desc, "CLOSE", input);
 }
 
+//Client Operations
 void clientOperations(int desc, int try_count, struct AccountDetails user){
     char input[1024];
     int flag = 0;
@@ -606,7 +624,8 @@ void clientOperations(int desc, int try_count, struct AccountDetails user){
     }
 }
 
-void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int index){
+//Modify train details
+void adminModifyTrain(int desc, int try_count, struct TrainDetails temp, int index){
     char buff[1024];
     struct flock lock;
     int flag = 0;
@@ -639,7 +658,7 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
             strcpy(message, "Invalid Number of seats entered, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
-            admin_train_modify(desc, --try_count, temp, index);
+            adminModifyTrain(desc, --try_count, temp, index);
         }
         else{
             temp.totalSeats = total_seats;
@@ -657,7 +676,7 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
             strcpy(message, "Invalid Number of seats entered, kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
-            admin_train_modify(desc, --try_count, temp, index);
+            adminModifyTrain(desc, --try_count, temp, index);
         }
         else{
             temp.bookedSeats = booked_seats;
@@ -702,7 +721,8 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
     }
 }
 
-void admin_train_op(int desc, int try_count){
+//Train operations by Admin
+void adminTrainOperations(int desc, int try_count){
     char buff[1024];
     int index = 0;
     struct flock lock;
@@ -737,7 +757,7 @@ void admin_train_op(int desc, int try_count){
             strcpy(message, "Invalid Number of seats, Please try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
-            admin_train_op(desc, --try_count);
+            adminTrainOperations(desc, --try_count);
         }
         train.bookedSeats = 0;
         strcpy(train.trainStatus, "ACTIVE");
@@ -773,7 +793,7 @@ void admin_train_op(int desc, int try_count){
         if(flag){
             writeUnlock(lock, fd);
             close(fd);
-            admin_train_op(desc, --try_count);
+            adminTrainOperations(desc, --try_count);
         }
         else{
             write(fd, &train, sizeof(train));
@@ -828,7 +848,7 @@ void admin_train_op(int desc, int try_count){
             strcat(msg, " not found OR has no bookings. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
-            admin_train_op(desc, --try_count);
+            adminTrainOperations(desc, --try_count);
         }        
     }else if(strcmp("3", buff) == 0){
         char message[1024] = "\nUpdating Train Details...";
@@ -852,7 +872,7 @@ void admin_train_op(int desc, int try_count){
         close(fd);
             
         if(flag){
-            admin_train_modify(desc, 2, temp, index);
+            adminModifyTrain(desc, 2, temp, index);
             adminOperations(desc, 2);
         }else{
             char msg[1024] = "Train Number ";
@@ -860,7 +880,7 @@ void admin_train_op(int desc, int try_count){
             strcat(msg, " not found. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
-            admin_train_op(desc, --try_count);
+            adminTrainOperations(desc, --try_count);
         }
         
     }else if(strcmp("4", buff) == 0){
@@ -912,7 +932,7 @@ void admin_train_op(int desc, int try_count){
             strcat(msg, " not found. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
-            admin_train_op(desc, --try_count);
+            adminTrainOperations(desc, --try_count);
         }
 
     }else{
@@ -920,7 +940,8 @@ void admin_train_op(int desc, int try_count){
     }
 }
 
-void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int index){
+//Modify User Details by Admin.
+void adminModifyUser(int desc, int try_count, struct AccountDetails temp, int index){
     char buff[1024];
     int flag = 0;
     struct flock lock;
@@ -953,7 +974,7 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
             strcpy(message, "Invalid Account type, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
-            admin_user_modify(desc, --try_count, temp, index);
+            adminModifyUser(desc, --try_count, temp, index);
         }
         else{
             temp.accountType = type;
@@ -1011,6 +1032,7 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
     }
 }
 
+//Admin Operations on User.
 void adminUserOperations(int desc, int try_count){
     char buff[1024];
     struct flock lock;
@@ -1215,7 +1237,7 @@ void adminUserOperations(int desc, int try_count){
         close(fd);
             
         if(flag){
-            admin_user_modify(desc, 2, temp, index);
+            adminModifyUser(desc, 2, temp, index);
             adminOperations(desc, 2);
         }else{
             char msg[1024] = "Account ";
@@ -1295,6 +1317,7 @@ void adminUserOperations(int desc, int try_count){
     return;
 }
 
+//Giving option to client to select Type of admin operations.
 void adminOperations(int desc, int try_count){
     char input[1024];
     if(try_count<=0){
@@ -1307,7 +1330,7 @@ void adminOperations(int desc, int try_count){
     sendMessage(desc, "RW", input);
     sendMessage(desc, message, input);
     if(strcmp("1", input)==0){
-        admin_train_op(desc, 2);
+        adminTrainOperations(desc, 2);
     }
     else if(strcmp("2", input) == 0){
         adminUserOperations(desc, 2);
@@ -1317,6 +1340,7 @@ void adminOperations(int desc, int try_count){
     }
 }
 
+//Logging out and closing client connection.
 void logout(int desc, struct AccountDetails user){
     struct AccountDetails tempAccount;
     int index = 0;

@@ -1,3 +1,7 @@
+/* MT2020013 APOORV PANSE
+This is a structure file for Account, Booking and Train.
+*/
+
 struct AccountDetails
 {
     char username[1024];

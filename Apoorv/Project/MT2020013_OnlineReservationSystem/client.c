@@ -1,3 +1,8 @@
+/* MT2020013 APOORV PANSE
+This is a client code. Client is kept dummy so that all the operations are performed on server 
+Client only communicates with the server by message passing via socket programming.
+*/
+
 #include<stdio.h>
 #include<sys/socket.h>
 #include<unistd.h>

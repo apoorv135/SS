@@ -1,3 +1,7 @@
+/* MT2020013 APOORV PANSE
+Code for initial setting up of Login, Train, Booking and Bid Informations.
+*/
+
 void initial_setup(){
     if(open("loginInfo.dat", O_RDONLY) == -1){
         
