@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 #include "setup.c"
 
 void initial_setup();
@@ -41,9 +40,6 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
 void admin_user_op(int desc, int try_count);
 void adminOperations(int desc, int try_count);
 void clientOperations(int desc, int try_count, struct AccountDetails user);
-
-
-
 
 struct flock readLock(struct flock lock, int fd){
     lock.l_type = F_RDLCK;
