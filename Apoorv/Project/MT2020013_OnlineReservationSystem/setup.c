@@ -1,9 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include "Structures.c"
+#include <declarationHeader.h>
 
 void initial_setup(){
     if(open("loginInfo.dat", O_RDONLY) == -1){
