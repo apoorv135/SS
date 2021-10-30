@@ -108,7 +108,7 @@ int printTrainInfo(int desc){
     int fd = open("trainInfo.dat", O_RDONLY);
     readLock(lock, fd);
     int flag = 0;
-    char message[1024] = "\nTrain Details are:";
+    char message[1024] = "\nTrain Details :";
     sendMessage(desc, "R", buff);
     sendMessage(desc, message, buff);
     while(read(fd, &train, sizeof(train)) > 0){
@@ -188,7 +188,7 @@ int updateTrainSeats(struct BookingDetails book){
     }
     writeUnlock(lock, fd);
     close(fd);
-    printf("Train Not found for updating the seats.\n");
+    printf("Train Not found, cannot update the seats...\n");
     return 0;
 }
 
@@ -200,7 +200,7 @@ int printBookingDetails(int desc, struct AccountDetails user){
     readLock(lock, fd);
     int flag = 0;
     char input[1024];
-    char msg[1024] = "\nView Previous Bookings - User ";
+    char msg[1024] = "\nView User Bookings : ";
     strcat(msg, user.username);
     sendMessage(desc, "R", input);
     sendMessage(desc, msg, input);
@@ -226,7 +226,7 @@ int printBookingDetails(int desc, struct AccountDetails user){
     readUnlock(lock, fd);
     close(fd);
     if(!flag){
-        strcpy(msg, "**No Booking found. Please book first.\n");
+        strcpy(msg, "Booking Not Found... Kindly book first..\n");
         sendMessage(desc, "R", input);
         sendMessage(desc, msg, input);
         return 0;
@@ -244,7 +244,7 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
     int flag = 0, index = 0, diff = 0;
     struct BookingDetails book, temp;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         logout(desc, user);
@@ -253,19 +253,19 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
 
     printTrainInfo(desc);
     if(printBookingDetails(desc, user)){
-        char message[1024] = "Update A Ticket Booking(Seats)- Add Booking Details";
+        char message[1024] = "Update Booking...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         strcpy(message, "Enter Booking Number: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &book.bookingNumber);
-        strcpy(message, "Enter to be booked number of seats in the train(>0)(subject to availability)(new): ");
+        strcpy(message, "Enter number of seats to be booked in the train (new): ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &book.NumOfSeats);
         if(book.NumOfSeats<=0){
-            strcpy(message, "\n**Invalid Number of seats entered, Please try again.");
+            strcpy(message, "\nInvalid Number of seats entered, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             updateBooking(desc, --try_count, user);
@@ -284,7 +284,7 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
             readUnlock(lock, fd);
             close(fd);        
             if(!flag){
-                strcpy(message, "\n**Invalid Booking Number entered or Booking is Cancelled, Please Enter valid Booking Number");
+                strcpy(message, "\nInvalid Booking Number, Kindly enter valid Booking Number");
                 sendMessage(desc, "R", buff);
                 sendMessage(desc, message, buff);
                 clientOperations(desc, --try_count, user);
@@ -292,12 +292,12 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
             else{
                 switch (checkTrainSeats(temp)){
                     case 0:
-                        strcpy(message, "\n**");
+                        strcpy(message, "\n");
                         snprintf(buff, sizeof(buff), "%d", temp.NumOfSeats);
                         strcat(message, buff);
                         strcat(message, " Seats not available on Train Number ");
                         strcat(message, book.trainNo);
-                        strcat(message, ", Please try again.");
+                        strcat(message, ", Kindly try again.");
                         sendMessage(desc, "R", buff);
                         sendMessage(desc, message, buff);
                         clientOperations(desc, --try_count, user);
@@ -310,10 +310,10 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
                         write(fd, &temp, sizeof(temp));
                         writeUnlock(lock, fd);
                         close(fd);
-                        strcpy(message, "\n*Booking with Booking ID - ");
+                        strcpy(message, "\nBooking ID - ");
                         snprintf(buff, sizeof(buff), "%d", temp.bookingNumber);
                         strcat(message, buff);
-                        strcat(message, ", successfully updated, Now Number of seats booked are ");
+                        strcat(message, ", successfully updated, Number of seats booked are ");
                         snprintf(buff, sizeof(buff), "%d", temp.NumOfSeats);
                         strcat(message, buff);
                         strcat(message, " on train ");
@@ -324,9 +324,9 @@ void updateBooking(int desc, int try_count, struct AccountDetails user){
                         clientOperations(desc, 2, user);
                         return;
                     case 2:
-                        strcpy(message, "\n**Train Number ");
+                        strcpy(message, "\nTrain Number ");
                         strcat(message, temp.trainNo);
-                        strcat(message, " NOT FOUND. Please try again.\n");
+                        strcat(message, " NOT FOUND. Kindly try again.\n");
                         sendMessage(desc, "R", buff);
                         sendMessage(desc, message, buff);
                         return;
@@ -347,14 +347,14 @@ void deleteBooking(int desc, int try_count, struct AccountDetails user){
     int flag = 0, index = 0;
     struct BookingDetails book, temp;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         logout(desc, user);
         return;
     }
     if(printBookingDetails(desc, user)){
-        char message[1024] = "Delete A Ticket Booking- Add Booking Details";
+        char message[1024] = "Deleting a Ticket...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         strcpy(message, "Enter Booking Number: ");
@@ -378,7 +378,7 @@ void deleteBooking(int desc, int try_count, struct AccountDetails user){
         readUnlock(lock, fd);
         close(fd);
         if(!flag){
-            strcpy(message, "\n**Invalid Booking Number entered or Booking is already Cancelled, Please Enter valid Booking Number");
+            strcpy(message, "\nInvalid Booking Number, Kindly enter valid Booking Number");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             clientOperations(desc, --try_count, user);
@@ -435,7 +435,7 @@ void bookTickets(int desc, int try_count, struct AccountDetails user){
         strcpy(book.accountNo, user.username);
         strcpy(book.bookingStatus, "TICKETS CONFIRMED");
         if(book.NumOfSeats<=0){
-            strcpy(message, "\n**Incorrect number of seats entered, Kindly try again.");
+            strcpy(message, "\nInvalid number of seats entered, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             clientOperations(desc, --try_count, user);
@@ -499,7 +499,7 @@ int getCreds(int desc){
     char username_msg[1024] = "Enter Username: ";
     char password_msg[1024] = "Enter Password: ";
     char username[1024], password[1024];
-    char welcome_msg[1024] = "------------Welcome to Ticketing System------------";
+    char welcome_msg[1024] = "****Welcome to Online Railway Ticket Management System****";
     char login_msg[1024] = "Kindly Enter your credentials";
     char input[1024];
     sendMessage(desc, "R", input);
@@ -523,7 +523,7 @@ void verifyCreds(int desc, char *username, char *password){
     char input[1024];
     int index = 0;
     if(fd == -1){
-        char file_not_found[] = "Incorrect UserName or Password. Try Again.\n"; 
+        char file_not_found[] = "Invalid UserName or Password. Please try Again.\n"; 
         sendMessage(desc, "R", input);
         sendMessage(desc, file_not_found, input);
         sendMessage(desc, "CLOSE", input);
@@ -533,7 +533,7 @@ void verifyCreds(int desc, char *username, char *password){
             if(account.accountType==1 && account.sessionFlag==1){
                 char welcome_msg[1024] = "\nWelcome ";
                 strcat(welcome_msg, account.username);
-                strcat(welcome_msg, "\n**You are already logged in. You can't login again.\n");
+                strcat(welcome_msg, "\nYou are already logged in...\n");
                 sendMessage(desc, "R", input);
                 sendMessage(desc, welcome_msg, input);
                 writeUnlock(lock, fd);
@@ -546,7 +546,7 @@ void verifyCreds(int desc, char *username, char *password){
             write(fd, &account, sizeof(account));
             writeUnlock(lock, fd);
             close(fd);
-            char welcome_msg[1024] = "\nWelcome ";
+            char welcome_msg[1024] = "\n****Welcome to Online Railway Ticket Management System****";
             strcat(welcome_msg, account.username);
             sendMessage(desc, "R", input);
             sendMessage(desc, welcome_msg, input);
@@ -568,7 +568,7 @@ void verifyCreds(int desc, char *username, char *password){
         }
         ++index;
     }
-    char user_not_found[] = "Incorrect UserName or Password. Try Again.\n"; 
+    char user_not_found[] = "Invalid UserName or Password... Please try again.\n"; 
     sendMessage(desc, "R", input);
     sendMessage(desc, user_not_found, input);
     sendMessage(desc, "CLOSE", input);
@@ -578,12 +578,12 @@ void clientOperations(int desc, int try_count, struct AccountDetails user){
     char input[1024];
     int flag = 0;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", input);
         sendMessage(desc, message, input);
         return;
     }
-    char message[1024] = "Press 1 to Book Ticket\nPress 2 to View Previous Bookings\nPress 3 to Update Booking\nPress 4 to Cancel Booking\nPress any other key to Exit\nEnter your choice: ";
+    char message[1024] = "1. Book Ticket\n2. View Previous Bookings\n3. Update Booking\n4. Cancel Booking\nType exit to quit\nEnter operation of your choice: ";
     sendMessage(desc, "RW", input);
     sendMessage(desc, message, input);
     if(strcmp("1", input)==0){
@@ -611,14 +611,14 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
     struct flock lock;
     int flag = 0;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         return;
     }
-    char message[1024]= "\nTrain Attributes Modification - ";
+    char message[1024]= "\nTrain Modification - ";
     strcat(message, temp.number);
-    strcat(message, "\nPress 1 to Modify Train Name\nPress 2 to Modify Train Total Seats\nPress 3 to Modify Train Booked Seats\nPress any other key to Exit\nEnter your choice: ");
+    strcat(message, "\n1.Modify Train Name\n2. Modify Total Seats\n3. Modify Booked Seats\nType exit to quit\nEnter operation of your choice: ");
     sendMessage(desc, "RW", buff);
     sendMessage(desc, message, buff);
     if(strcmp("1", buff) == 0){
@@ -626,35 +626,35 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(temp.name, buff);
-        strcpy(message, "*Train Name details modified successfully\n");
+        strcpy(message, "Train Name modified successfully\n");
         flag = 1;
     }
     else if(strcmp("2", buff) == 0){
         int total_seats;
-        strcpy(message, "Enter total seats in the train(>0) (new): ");
+        strcpy(message, "Enter total seats in the train (new): ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &total_seats);
         if(total_seats<=0){
-            strcpy(message, "**Invalid Number of seats entered, Please try again.");
+            strcpy(message, "Invalid Number of seats entered, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             admin_train_modify(desc, --try_count, temp, index);
         }
         else{
             temp.totalSeats = total_seats;
-            strcpy(message, "*Train total seats details modified successfully.\n");
+            strcpy(message, "Train total seats modified successfully.\n");
             flag = 1;
         }
         
     }else if(strcmp("3", buff) == 0){
         int booked_seats;
-        strcpy(message, "Enter booked seats in the train(>0) (new): ");
+        strcpy(message, "Enter booked seats in the train (new): ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &booked_seats);
         if(booked_seats<0 && booked_seats>temp.totalSeats){
-            strcpy(message, "**Invalid Number of seats entered, Please try again.");
+            strcpy(message, "Invalid Number of seats entered, kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             admin_train_modify(desc, --try_count, temp, index);
@@ -662,7 +662,7 @@ void admin_train_modify(int desc, int try_count, struct TrainDetails temp, int i
         else{
             temp.bookedSeats = booked_seats;
             flag = 1;
-            strcpy(message, "*Train booked seats details modified successfully.\n");
+            strcpy(message, "Train seats modified successfully.\n");
         }
     }else{
         return ;
@@ -707,18 +707,18 @@ void admin_train_op(int desc, int try_count){
     int index = 0;
     struct flock lock;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         return;
     }
-    char message[1024]= "\nTrain Operations\nPress 1 to Add a Train\nPress 2 to Delete a Train\nPress 3 to Update a Train\nPress 4 to Retrieve Train Details\nPress any other key to Exit\nEnter your choice: ";
+    char message[1024]= "\nTrain Operations...\n1. Add Train\n2. Delete Train\n3. Update Train\n4. Fetch Train Details\nType exit to quit\nEnter operation of your choice: ";
     struct TrainDetails train, temp;
     int flag = 0;
     sendMessage(desc, "RW", buff);
     sendMessage(desc, message, buff);
     if(strcmp("1", buff) == 0){
-        char message[1024] = "\nOperation Add a Train- Add Train Details";
+        char message[1024] = "\nAdding Train...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         strcpy(message, "Enter Train Number: ");
@@ -729,12 +729,12 @@ void admin_train_op(int desc, int try_count){
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(train.name, buff);
-        strcpy(message, "Enter total seats in the train(>0): ");
+        strcpy(message, "Enter total seats in the train : ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &train.totalSeats);
         if(train.totalSeats<=0){
-            strcpy(message, "**Invalid Number of seats entered, Please try again.");
+            strcpy(message, "Invalid Number of seats, Please try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             admin_train_op(desc, --try_count);
@@ -745,9 +745,9 @@ void admin_train_op(int desc, int try_count){
         writeLock(lock, fd);
         while(read(fd, &temp, sizeof(temp)) > 0){
             if(strcmp(train.number, temp.number)==0 && strcmp(temp.trainStatus, "ACTIVE")==0){
-                char msg[1024] = "**Train Number ";
+                char msg[1024] = "Train Number ";
                 strcat(msg, train.number);
-                strcat(msg, " is already present. Cannot add Train with same train number, Kindly try again.");
+                strcat(msg, " is already present. Kindly try again.");
                 sendMessage(desc, "R", buff);
                 sendMessage(desc, msg, buff);
                 flag = 1;
@@ -758,11 +758,11 @@ void admin_train_op(int desc, int try_count){
                 write(fd, &train, sizeof(train));
                 writeUnlock(lock, fd);
                 close(fd);
-                char msg[1024] = "*Train Number ";
+                char msg[1024] = "Train Number ";
                 strcat(msg, train.number);
                 strcat(msg, " (");
                 strcat(msg, train.name);
-                strcat(msg, ") is successfully added in the train list.\n");
+                strcat(msg, ") is successfully added.\n");
                 sendMessage(desc, "R", buff);
                 sendMessage(desc, msg, buff);
                 adminOperations(desc, 2);
@@ -779,21 +779,21 @@ void admin_train_op(int desc, int try_count){
             write(fd, &train, sizeof(train));
             writeUnlock(lock, fd);
             close(fd);
-            char msg[1024] = "*Train Number ";
+            char msg[1024] = "Train Number ";
             strcat(msg, train.number);
             strcat(msg, " (");
             strcat(msg, train.name);
-            strcat(msg, ") is successfully added in the train list.\n");
+            strcat(msg, ") is successfully added.\n");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             adminOperations(desc, 2);
         }
     }else if(strcmp("2", buff) == 0){
-        char message[1024] = "\nOperation Delete a Train";
+        char message[1024] = "\nDeleting a train...";
         int index = 0;
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter Train Number(to be deleted): ");
+        strcpy(message, "Enter Train Number to be deleted: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(train.number, buff);
@@ -812,30 +812,30 @@ void admin_train_op(int desc, int try_count){
             write(fd, &temp, sizeof(temp));
             writeUnlock(lock, fd);
             close(fd);
-            char msg[1024] = "*Train Number ";
+            char msg[1024] = "Train Number ";
             strcat(msg, temp.number);
             strcat(msg, " (");
             strcat(msg, temp.name);
-            strcat(msg, ") is successfully deleted from the train list.\n");
+            strcat(msg, ") is successfully deleted.\n");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             adminOperations(desc, 2);
         }else{
             writeUnlock(lock, fd);
             close(fd);
-            char msg[1024] = "**Train Number ";
+            char msg[1024] = "Train Number ";
             strcat(msg, train.number);
-            strcat(msg, " not found in the train list OR Train has Bookings registered to it. Kindly try again.");
+            strcat(msg, " not found OR has no bookings. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             admin_train_op(desc, --try_count);
         }        
     }else if(strcmp("3", buff) == 0){
-        char message[1024] = "\nOperation Modify a Train- Update Train Details";
+        char message[1024] = "\nUpdating Train Details...";
         int index = 0;
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter Train Number(to be modified): ");
+        strcpy(message, "Enter Train Number to be modified: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(train.number, buff);
@@ -855,19 +855,19 @@ void admin_train_op(int desc, int try_count){
             admin_train_modify(desc, 2, temp, index);
             adminOperations(desc, 2);
         }else{
-            char msg[1024] = "**Train Number ";
+            char msg[1024] = "Train Number ";
             strcat(msg, train.number);
-            strcat(msg, " not found in the train list. Kindly try again.");
+            strcat(msg, " not found. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             admin_train_op(desc, --try_count);
         }
         
     }else if(strcmp("4", buff) == 0){
-        char message[1024] = "\nOperation Retrieve a Train- Retrieve Train Details";
+        char message[1024] = "\nRetrieving Train details";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter Train Number(to be retrieved): ");
+        strcpy(message, "Enter Train Number to be retrieved: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(train.number, buff);
@@ -907,9 +907,9 @@ void admin_train_op(int desc, int try_count){
             sendMessage(desc, msg, buff);            
             adminOperations(desc, 2);
         }else{
-            char msg[1024] = "\n**Train Number ";
+            char msg[1024] = "\nTrain Number ";
             strcat(msg, train.number);
-            strcat(msg, " not found in the train list. Kindly try again.");
+            strcat(msg, " not found. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             admin_train_op(desc, --try_count);
@@ -925,14 +925,14 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
     int flag = 0;
     struct flock lock;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         return;
     }
-    char message[1024]= "\nAccount Attributes Modification - ";
+    char message[1024]= "\nAccount Modification : ";
     strcat(message, temp.username);
-    strcat(message, "\nPress 1 to change Account Password\nPress 2 to Modify Account Type\nPress any other key to Exit\nEnter your choice: ");
+    strcat(message, "\n1. Change Password\n2. Change Account Type\nType exit to quit\nEnter operation number of your choice: ");
     sendMessage(desc, "RW", buff);
     sendMessage(desc, message, buff);
     if(strcmp("1", buff) == 0){
@@ -940,24 +940,24 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(temp.password, buff);
-        strcpy(message, "*Account password changed successfully\n");
+        strcpy(message, "Account password changed successfully\n");
         flag = 1;
     }
     else if(strcmp("2", buff) == 0){
         int type;
-        strcpy(message, "Enter Account type - 1 for User or 2 for Agent or 3 for Admin: ");
+        strcpy(message, "Enter Account type\n1.User\n2. Agent\n3. Admin: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &type);
         if(type<=0 && type>3){
-            strcpy(message, "**Invalid Account type, Please try again.");
+            strcpy(message, "Invalid Account type, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             admin_user_modify(desc, --try_count, temp, index);
         }
         else{
             temp.accountType = type;
-            strcpy(message, "*Account type modified successfully\n");
+            strcpy(message, "Account type modified successfully\n");
             flag = 1;
         }
     }else{
@@ -987,7 +987,7 @@ void admin_user_modify(int desc, int try_count, struct AccountDetails temp, int 
             strcpy(value, "NA(account type)\t");
             break;
         }
-        strcat(msg, "modified details are:");
+        strcat(msg, "Modified details are:");
         sendMessage(desc, "R", buff);
         sendMessage(desc, msg, buff);
         strcpy(msg, temp.username);
@@ -1016,35 +1016,35 @@ void adminUserOperations(int desc, int try_count){
     struct flock lock;
     int index = 0;
     if(try_count<=0){
-        char message[1024] = "\n**Maximum invalid input limit reached. Shutting down.";
+        char message[1024] = "\nInvalid input limit reached...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
         return;
     }
-    char message[1024]= "\nUser/Agent/Admin Account Operations\nPress 1 to Add an Account\nPress 2 to Delete an Account\nPress 3 to Update an Account\nPress 4 to Retrieve an Account Details\nPress any other key to Exit\nEnter your choice: ";
+    char message[1024]= "\n1. Add Account\n2. Delete Account\n3. Update Account\n4. Fetch Account Details\nType exit to quit\nEnter operation number of your choice: ";
     struct AccountDetails user, temp;
     int flag = 0;
     sendMessage(desc, "RW", buff);
     sendMessage(desc, message, buff);
     if(strcmp("1", buff) == 0){
-        char message[1024] = "\nOperation Add an Account- Add Account Details";
+        char message[1024] = "\nAdding an Account...";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter Account Name: ");
+        strcpy(message, "Please enter Account Name: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(user.username, buff);
-        strcpy(message, "Enter Account Password: ");
+        strcpy(message, "Please enter Password: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(user.password, buff);
-        strcpy(message, "Enter Account type - 1 for User or 2 for Agent or 3 for Admin: ");
+        strcpy(message, "Enter Account type \n 1. User \n2. Agent \n3 Admin: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         sscanf(buff, "%d", &user.accountType);
         user.sessionFlag = 0;
         if(user.accountType<=0 || user.accountType>3){
-            strcpy(message, "**Invalid Account type, Please try again.");
+            strcpy(message, "Invalid Account type, Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, message, buff);
             adminUserOperations(desc, --try_count);
@@ -1055,9 +1055,9 @@ void adminUserOperations(int desc, int try_count){
             writeLock(lock, fd);
             while(read(fd, &temp, sizeof(temp)) > 0){
                 if(strcmp(user.username, temp.username)==0 && strcmp(temp.accountStatus, "ACTIVE")==0){
-                    char msg[1024] = "**Account ";
+                    char msg[1024] = "Account ";
                     strcat(msg, user.username);
-                    strcat(msg, " is already present. Cannot add another account with same username, Kindly try again.");
+                    strcat(msg, " is already present... Kindly try again...");
                     sendMessage(desc, "R", buff);
                     sendMessage(desc, msg, buff);
                     flag = 1;
@@ -1068,7 +1068,7 @@ void adminUserOperations(int desc, int try_count){
                     write(fd, &user, sizeof(user));
                     writeUnlock(lock, fd);
                     close(fd);
-                    char msg[1024] = "*Account ";
+                    char msg[1024] = "Account ";
                     strcat(msg, user.username);
                     strcat(msg, "(");
                     switch (user.accountType)
@@ -1086,7 +1086,7 @@ void adminUserOperations(int desc, int try_count){
                         strcat(msg, "(Not Possible) ");
                         break;
                     }
-                    strcat(msg, "is successfully added in the accounts list.\n");
+                    strcat(msg, "is successfully added...\n");
                     sendMessage(desc, "R", buff);
                     sendMessage(desc, msg, buff);
                     adminOperations(desc, 2);
@@ -1103,7 +1103,7 @@ void adminUserOperations(int desc, int try_count){
                 write(fd, &user, sizeof(user));
                 writeUnlock(lock, fd);
                 close(fd);
-                char msg[1024] = "*Account ";
+                char msg[1024] = "Account ";
                 strcat(msg, user.username);
                 strcat(msg, "(");
                 switch (user.accountType)
@@ -1121,18 +1121,18 @@ void adminUserOperations(int desc, int try_count){
                     strcat(msg, "(Not Possible) ");
                     break;
                 }
-                strcat(msg, "is successfully added in the accounts list.\n");
+                strcat(msg, "is successfully added..\n");
                 sendMessage(desc, "R", buff);
                 sendMessage(desc, msg, buff);
                 adminOperations(desc, 2);
             }
         }        
     }else if(strcmp("2", buff) == 0){
-        char message[1024] = "\nOperation Delete an Account";
+        char message[1024] = "\nDeleting an Account...";
         int index = 0;
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter username(to be deleted): ");
+        strcpy(message, "Enter username to be deleted: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(user.username, buff);
@@ -1163,7 +1163,7 @@ void adminUserOperations(int desc, int try_count){
             write(fd, &temp, sizeof(temp));
             writeUnlock(lock, fd);
             close(fd);
-            char msg[1024] = "*Account ";
+            char msg[1024] = "Account ";
             strcat(msg, temp.username);
             switch (temp.accountType){
             case 1:
@@ -1186,19 +1186,19 @@ void adminUserOperations(int desc, int try_count){
         }else{
             writeUnlock(lock, fd);
             close(fd);
-            char msg[1024] = "**Account (";
+            char msg[1024] = "Account ";
             strcat(msg, user.username);
-            strcat(msg, ") not found in the accounts list OR Bookings done for given user account. Kindly try again.");
+            strcat(msg, " not found in the accounts list OR Bookings not done. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             adminUserOperations(desc, --try_count);
         }        
     }else if(strcmp("3", buff) == 0){
-        char message[1024] = "\nOperation Modify an Account- Update Account Details";
+        char message[1024] = "\nModifying Account Details";
         int index = 0;
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter username(to be modified): ");
+        strcpy(message, "Enter username to be modified: ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(user.username, buff);
@@ -1218,19 +1218,19 @@ void adminUserOperations(int desc, int try_count){
             admin_user_modify(desc, 2, temp, index);
             adminOperations(desc, 2);
         }else{
-            char msg[1024] = "**Account (";
+            char msg[1024] = "Account ";
             strcat(msg, user.username);
-            strcat(msg, ") not found in the accounts list. Kindly try again.");
+            strcat(msg, " not found in the accounts list. Kindly try again.");
             sendMessage(desc, "R", buff);
             sendMessage(desc, msg, buff);
             adminUserOperations(desc, --try_count);
         }
         
     }else if(strcmp("4", buff) == 0){
-        char message[1024] = "\nOperation Retrieve an Account- Retrieve Account Details";
+        char message[1024] = "\nRetrieving Account Details";
         sendMessage(desc, "R", buff);
         sendMessage(desc, message, buff);
-        strcpy(message, "Enter username(to be retrieved): ");
+        strcpy(message, "Enter username to be retrieved): ");
         sendMessage(desc, "RW", buff);
         sendMessage(desc, message, buff);
         strcpy(user.username, buff);
