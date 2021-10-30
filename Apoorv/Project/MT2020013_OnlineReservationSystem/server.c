@@ -27,7 +27,7 @@ int main(int argc, char const *argv[]){
 	        exit(EXIT_FAILURE);
 	    }
         if(fork() == 0){
-            client_connection(client_desc);
+            clientConn(client_desc);
             close(client_desc);
             exit(EXIT_SUCCESS);
         }else{
